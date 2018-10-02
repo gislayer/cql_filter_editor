@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Creating CQL Filter by Javascript</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="src/css/jquery.json-viewer.css">
+    <link rel="stylesheet" href="src/css/jquery-tagsinput.min.css">
+    <link rel="stylesheet" href="src/css/index.css">
+    <link rel="stylesheet" href="src/css/jquery.alertable.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="src/js/jquery.json-editor.js"></script>
+    <script src="src/js/jquery.json-viewer.js"></script>
+    <script src="src/js/jquery-tagsinput.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/velocity/1.2.3/velocity.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/velocity/1.2.3/velocity.ui.min.js'></script>
+<script src="src/js/jquery.alertable.js"></script>
+<script src="src/js/clipboard.min.js"></script>
+</head>
+<body>
+        <div class='notifications top-left'></div>
+    <div class="container">
+        <h3 style="color: #009688;">Creating CQL Filter by Javascript</h3>
+            <h4>Database Table Model</h4>
+            <form class="row" style="margin-bottom: 35px;">
+                <div class="col-6" >
+                        <ul class="list-group">
+                                <li class="list-group-item active" style="padding: 8px;">Model Editor</li>
+                                <li class="list-group-item" style="padding: 5px;">
+                                        <div class="form-group row">
+                                                <div class="col-5">
+                                                    <input id="newColumnName" type="text" placeholder="New Column Name" class="form-control">
+                                                </div>
+                                                <div class="col-5">
+                                                    <select id="columnTypes" class="form-control">
+                                                        <option value="0">Data Types</option>
+                                                        <option value="integer">Integer</option>
+                                                        <option value="string">String</option>
+                                                        <option value="float">Float</option>
+                                                        <option value="boolean">Boolean</option>
+                                                        <option value="date">Date</option>
+                                                        <option value="point">Geometry - Point</option>
+                                                        <option value="polyline">Geometry - Linestring</option>
+                                                        <option value="polygon">Geometry - Polygon</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-2">
+                                                    <input style="width: 100%;" onclick="addColumn()" type="button" class="btn btn-default" value="Add">
+                                                </div>
+                                            </div>
+                                            <div class="form-group" style="margin: 0;">
+                                                <textarea style="height: 147px;" id="json-input" onkeyup="showInJSONViewer()"  autocomplete="off" rows="5"  class="form-control">{"id":{"type":"integer"},"name":{"type":"string"},"maas":{"type":"float"},"aktif":{"type":"boolean"},"tarih":{"type":"date"},"geoloc":{"type":"polygon"}}</textarea>
+                                            </div>
+                                </li>
+                        </ul>
+                </div>
+                <div class="col-2">
+                    <ul class="list-group" id="modelTableList">
+                        <li class="list-group-item active" style="padding: 8px;">Manage Model</li>
+                    </ul>
+                </div>
+                <div class="col-4">
+                        <ul class="list-group">
+                                <li class="list-group-item active" style="padding: 8px;">Model JSON Viewer <button id="buttonCopyJSON" type="button" class="btn btn-info btn-sm float-right">Copy</button></li>
+                                <li class="list-group-item" style="padding: 0;">
+                                        <pre class="vievermy" onkeyup="getText()" id="json-display"></pre>
+                                </li>
+                        </ul>
+                </div>
+            </form>
+            <h4>Filter Column Choice</h4>
+            <form class="row">
+                    <div class="col-6">
+                            <ul class="list-group">
+                                    <li class="list-group-item active" style="padding: 8px;">Column - Operator - Value</li>
+                                    <li class="list-group-item" style="padding: 5px;">
+                                            <div class="form-group row">
+                                                    <div class="col-4">
+                                                        <select onchange="columnNameChanged(this)" class="form-control" id="columnNames">
+                                                            <option value="0">Table Columns</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <select disabled class="form-control" onchange="operatorChange(this);" id="operators">
+                                                            <option value="0" selected>Operators</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-4">
+                                                            <div class="btn-group float-right" role="group">
+                                                                <input style="width: 100%;" onclick="openParentheses()" type="button" class="btn btn-primary" value="(">
+                                                                <input style="width: 100%;" onclick="addQuery('AND')" type="button" class="btn btn-default" value="AND">
+                                                                <input style="width: 100%;" onclick="addQuery('OR')" type="button" class="btn btn-default" value="OR">
+                                                                <input style="width: 100%;" onclick="closeParentheses()" type="button" class="btn btn-primary" value=")">
+                                                            </div>
+                                                        
+                                                    </div>
+                                                </div>
+                                                <div class="form-group row" id="valuesTag" style="margin:0;">
+                                                    
+                                                </div>
+                                    </li>
+                            </ul>
+                        
+                        
+                    </div>
+                    <div class="col-2">
+                            <ul class="list-group" id="cqlTableList">
+                                    <li class="list-group-item active" style="padding: 8px;">Manage CQL</li>
+                                </ul>
+                    </div>
+                    <div class="col-4">
+                            <ul class="list-group">
+                                    <li class="list-group-item active" style="padding: 8px;">CQL Filter Export String - <button id="buttonCopy" type="button" class="btn btn-info btn-sm float-right">Copy</button></li>
+                                    <li class="list-group-item" style="padding: 0px;">
+                                            <div id="cqlExport"></div>
+                                    </li>
+                                    </ul>
+                        
+                    </div>
+            </form>
+            <hr>
+            <div class="row">
+                <h2>OTHER INFORMATIONS</h2>
+            </div>
+            <p class="row">
+                    <ul style="list-style: none; padding: 0;">
+                        <li><h3><a href="https://github.com/gislayer/cql_filter_editor">Documentation</a></h3></li>
+                        <li><h3><a href="http://www.portfolio.alikilic.org">Portfolio</a></h3></li>
+                    </ul>
+                </p>
+    </div>
+    
+</body>
+</html>
+<script>
+    var editor=null;
+    var model = {};
+    var columns = [];
+    
+    var clipboard1 = new ClipboardJS('#buttonCopyJSON', {
+        text: function() {
+            debugger;
+            return JSON.stringify(cqlFilter.getModel());
+        }
+    });
+    var clipboard2 = new ClipboardJS('#buttonCopy', {
+        text: function() {
+            return cqlFilter.getCqlStringClear();
+        }
+    });
+
+    function openParentheses(){
+        cqlFilter.openParentheses();
+    }
+
+    function closeParentheses(){
+        cqlFilter.closeParentheses();  
+    }
+
+
+    function addQuery(andor){
+        var coumnname = $("#columnNames").val();
+        var columnType = $("#operators").val();
+        if(coumnname!=="" && columnType!==""){
+            var durum = cqlFilter.getValueSettings(columnType);
+            var values = [];
+            switch(durum){
+                case "empty":
+                values.push([]);
+                break;
+                case "single":
+                for(var i=1;i<=1;i++){if($("#value"+i).val()!==""){values.push($("#value"+i).val());}}
+                break;
+                case "double":
+                for(var i=1;i<=2;i++){if($("#value"+i).val()!==""){values.push($("#value"+i).val());}}
+                break;
+                case "triple":
+                for(var i=1;i<=3;i++){if($("#value"+i).val()!==""){values.push($("#value"+i).val());}}
+                break;
+                case "quaters":
+                for(var i=1;i<=4;i++){if($("#value"+i).val()!==""){values.push($("#value"+i).val());}}
+                break;
+                case "multi":
+                debugger;
+                var val1 = $("#multitags").val();
+                var splits = val1.split(';');
+                splits.map(function(item){
+                    if(item!==""){
+                        values.push(item);
+                    }
+                });
+                break;
+            }
+            if(values.length>0){
+                cqlFilter.addCQLPart(coumnname,columnType,values,andor);
+                var cqlHTML = cqlFilter.getHTMLCQLString(cqlFilter.cqls,"");
+                $("#cqlExport").html(cqlHTML);
+                var cqlArray = cqlFilter.getCQLArray();
+                switch(durum){
+                    case "empty":
+                    break;
+                    case "single":
+                    for(var i=1;i<=1;i++){$("#value"+i).val('');}
+                    break;
+                    case "double":
+                    for(var i=1;i<=2;i++){$("#value"+i).val('');}
+                    break;
+                    case "triple":
+                    for(var i=1;i<=3;i++){$("#value"+i).val('');}
+                    break;
+                    case "quaters":
+                    for(var i=1;i<=4;i++){$("#value"+i).val('');}
+                    break;
+                    case "multi":
+                    debugger;
+                    $(".tag").html('');
+                    $("#multitags").val('');
+                    break;
+                }
+            }else{
+                $.alertable.alert("Please Write your Value(s)");
+            }
+
+        }else{
+            $.alertable.alert("Please select Column Name and Column Type");
+        }
+        $("#cqlTableList").html('<li class="list-group-item active" style="padding: 8px;">Manage CQL</li>');
+        listCQL(cqlFilter.getCQLArray());
+    }
+
+    function listCQL(dizi){
+        for(var z=0;z<dizi.length;z++){
+            var part = dizi[z];
+            if(typeof part.length=="number"){
+                listCQL(part,arapart);
+            }else{
+                $("#cqlTableList").append('<li class="list-group-item" style="padding: 5px;">'+part.cqlpart+' - <a href="#" onclick="removeCQL(\''+part.time+'\')" >Delete</a></li>');
+            }
+        }
+    }
+
+    function removeCQL(tm){
+        cqlFilter.removeCQL(time);
+    }
+
+    
+    function operatorChange(t){
+        var operatorName = $("#operators").val();
+        var durum = cqlFilter.getValueSettings(operatorName);
+        $("#valuesTag").html('');
+        switch(durum){
+            case "empty":
+            $("#valuesTag").html('');
+            break;
+            case "single":
+            $("#valuesTag").append('<input class="form-control" type="text" id="value1" placeholder="Value">');
+            break;
+            case "double":
+            $("#valuesTag").append('<div class="col-6" style="padding-left: 0;"><input class="form-control" type="text" id="value1" placeholder="Value 1"></div>');
+            $("#valuesTag").append('<div class="col-6" style="padding-right: 0;"><input class="form-control" type="text" id="value2" placeholder="Value 2"></div>');
+            break;
+            case "triple":
+            $("#valuesTag").append('<div class="col-4" style="padding-left: 0;"><input class="form-control" type="text" id="value1" placeholder="Value 1"></div>');
+            $("#valuesTag").append('<div class="col-4"><input class="form-control" type="text" id="value2" placeholder="Value 2"></div>');
+            $("#valuesTag").append('<div class="col-4" style="padding-right: 0;"><input class="form-control" type="text" id="value3" placeholder="Value 3"></div>');
+            break;
+            case "quaters":
+            if(operatorName=="BBOX"){
+                $("#valuesTag").append('<div class="col-3" style="padding-left: 0;"><input class="form-control" type="text" id="value1" placeholder="Value 1"></div>');
+                $("#valuesTag").append('<div class="col-3"><input class="form-control" type="text" id="value2" placeholder="Value 2"></div>');
+                $("#valuesTag").append('<div class="col-3"><input class="form-control" type="text" id="value3" placeholder="Value 3"></div>');
+                $("#valuesTag").append('<div class="col-3" style="padding-right: 0;"><input class="form-control" type="text" id="value4" placeholder="Value 4"></div>');
+            }else if(operatorName=="BEYOND" || operatorName=="DWITHIN"){
+                $("#valuesTag").append('<div class="col-3" style="padding-left: 0;"><input class="form-control" type="text" id="value1" placeholder="Value 1"></div>');
+                $("#valuesTag").append('<div class="col-3"><input class="form-control" type="text" id="value2" placeholder="Value 2"></div>');
+                $("#valuesTag").append('<div class="col-3"><input class="form-control" type="text" id="value3" placeholder="distance"></div>');
+                $("#valuesTag").append('<div class="col-3" style="padding-right: 0;"><select class="form-control" id="value4"><option value="" selected>Units</option></select></div>');
+                var units = cqlFilter.units;
+                units.map(function(a){
+                    $("#value4").append('<option value="'+a+'">'+a+'</option>');
+                });
+            }
+            
+            
+            
+            
+            break;
+            case "multi":
+            $("#valuesTag").append('<div class="col-12" style="padding: 0;"><input data-role="tags-input" id="multitags"> </div>');
+            $('#multitags').tagsInput();
+            break;
+        }
+    }
+
+
+    function columnNameChanged(t){
+        var columnName = t.value;
+        var operators = cqlFilter.getOperatorsByColumnName(columnName);
+        $("#operators").html('<option value="0" selected>Operators</option>');
+        $("#operators").removeAttr('disabled');
+        operators.map(function(item){
+            $("#operators").append('<option value="'+item+'">'+item+'</option>');
+        });
+    }
+
+    function addColumn(){
+        var newColumnName = $("#newColumnName").val();
+        var columnType = $("#columnTypes").val();
+        if(newColumnName!=="" && columnType!=="0"){
+            if(typeof model[newColumnName]=="undefined"){
+                model[newColumnName]={type:columnType};
+                $("#json-input").val(JSON.stringify(model));
+                showInJSONViewer();
+                $("#newColumnName").val('');
+                $("#columnTypes").val('0');
+            }else{
+                $.alertable.alert("You have already defined an existing column name...");
+                $("#newColumnName").val('');
+                $("#columnTypes").val('0');
+            }
+        }else{
+            $.alertable.alert("Column name and Data Type doesn't exist. Please input your informations");
+        }
+    }
+
+    function removeColumn(deleted){
+        var mymodel = cqlFilter.getModel();
+        for(var i in mymodel){
+            if(i==deleted){
+                delete mymodel[i];
+            }
+        }
+        setColumns(mymodel);
+        $("#json-input").val(JSON.stringify(mymodel));
+        showInJSONViewer();
+    }
+
+    function setColumns(mymodel){
+        cqlFilter.setModel(mymodel);
+        var columnsArray = [];
+        for(var i in mymodel){
+            if(columnsArray.indexOf(i)==-1){
+                columnsArray.push(i);
+            }
+        }
+        if(columnsArray.length>=0){
+            $("#columnNames").html('<option value="0">Table Columns</option>');
+            $("#modelTableList").html('<li class="list-group-item active" style="padding: 8px;">Manage Model</li>');
+            columnsArray.map(function(item,i){
+                $("#columnNames").append('<option value="'+item+'">'+item+'</option>');
+                $("#modelTableList").append('<li class="list-group-item" style="padding: 5px;"><b>'+item+'</b> - <a href="#" onclick="removeColumn(\''+item+'\')" >Delete</a></li>');
+
+            });
+        }else{
+            $("#columnNames").html('<option value="0">Table Columns</option>');
+        }
+    }
+
+    function getText(){
+        try{
+            var jsonText = $("#json-display").text();
+            $("#json-input").val(jsonText);
+            var json = JSON.parse(jsonText);
+            if(typeof editor!=="undefined"){
+                editor.load(json);
+            }else{
+                var editor = new JsonEditor('#json-display', json);
+                model = json;
+                setColumns(model);
+            }
+        }catch (ex) {
+            console.log('Wrong JSON Format: ' + ex);
+        }
+    }
+    function showInJSONViewer(){
+        debugger;
+        try{
+            var json = JSON.parse($("#json-input").val());
+            if(typeof editor!=="undefined"){
+                editor.load(json);
+            }else{
+                var editor = new JsonEditor('#json-display', json);
+                model = json;
+                setColumns(model);
+            }
+        }catch (ex) {
+            console.log('Wrong JSON Format: ' + ex);
+        }
+    }
+    showInJSONViewer();
+</script>
+<script src="cql_filter.js"></script>
+<script>
+    showInJSONViewer();
+</script>
