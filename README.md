@@ -4,7 +4,7 @@
 ## [DEMO Link](http://www.alikilic.org/cql_filter/)
 Geoserver users often use the cql_filter parameter. You can use this library in your javascript codebase. It is convenient and easy a library. A good start for developers who want to improve.
 
-![enter image description here](http://www.alikilic.org/cql_filter/cql_filter1.png)
+![enter image description here](http://www.alikilic.org/cql_filter/cql_filter2.png)
 
 # Libraries
  - [Jquery](https://jquery.com/) used for get values DOM
