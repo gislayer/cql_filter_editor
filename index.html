@@ -196,7 +196,8 @@
                 break;
             }
             if(values.length>0){
-                cqlFilter.addCQLPart(coumnname,columnType,values,andor);
+                var time = Date.now();
+                cqlFilter.addCQLPart(coumnname,columnType,values,andor,time);
                 var cqlHTML = cqlFilter.getHTMLCQLString(cqlFilter.cqls,"");
                 $("#cqlExport").html(cqlHTML);
                 var cqlArray = cqlFilter.getCQLArray();
@@ -236,7 +237,7 @@
         for(var z=0;z<dizi.length;z++){
             var part = dizi[z];
             if(typeof part.length=="number"){
-                listCQL(part,arapart);
+                listCQL(part);
             }else{
                 $("#cqlTableList").append('<li class="list-group-item" style="padding: 5px;">'+part.cqlpart+' - <a href="#" onclick="removeCQL(\''+part.time+'\')" >Delete</a></li>');
             }
@@ -244,7 +245,11 @@
     }
 
     function removeCQL(tm){
-        cqlFilter.removeCQL(time);
+        cqlFilter.deleteCQLPart(parseInt(tm));
+        $("#cqlTableList").html('<li class="list-group-item active" style="padding: 8px;">Manage CQL</li>');
+        listCQL(cqlFilter.getCQLArray());
+        var cqlHTML = cqlFilter.getHTMLCQLString(cqlFilter.cqls,"");
+        $("#cqlExport").html(cqlHTML);
     }
 
     

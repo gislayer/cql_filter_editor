@@ -25,6 +25,7 @@ class cql_filter{
             quaters:['BBOX','BEYOND','DWITHIN'],
             multi:['IN','NOT IN']
         };
+        
         this.justDoubleSpatial = ['INTERSECTS','DISJOINT','CONTAINS','WITHIN','TOUCHES','CROSSES','OVERLAPS','EQUALS'];
         this.units = ['feet','meters','statute miles','nautical miles','kilometers'];
         this.dataTypes = ["integer","string","float","boolean","date","point","polyline","polygon"];
@@ -39,8 +40,29 @@ class cql_filter{
         };
     }
 
-    removeCQL(time){
+    removeCQL(dizi,time){
+        debugger;
+        var emptyArray = [];
+        for(var z=0;z<dizi.length;z++){
+            var part = dizi[z];
+            if(typeof part.length=="number"){
+                var newarr = this.removeCQL(part,time);
+                if(newarr.length>0){
+                    emptyArray.push(newarr);
+                }
+            }else{
+                if(time==part.time){
+                    
+                }else{
+                    emptyArray.push(part);
+                }
+            }
+        }
+        return emptyArray;
+    }
 
+    deleteCQLPart(time){
+        this.cqls = this.removeCQL(this.cqls,time);
     }
 
     getCQLArray(){
@@ -147,17 +169,15 @@ class cql_filter{
 
     
 
-    addCQLPart(columnName,operator,values,andor){
+    addCQLPart(columnName,operator,values,andor,id){
         debugger;
         var oprtrs = this.getOperatorsByColumnName(columnName);
         var type = this.getTypeByColumnName(columnName);
         if(['IS NULL','IS NOT NULL'].indexOf(operator)==-1){
             values = this.convertWrongData(type,values,operator,columnName);
         }
-        
-
         var part = {};
-        var time = Date.now();
+        var time = id || Date.now()
         if(this.operatorValues.single.indexOf(operator)!==-1){
             part = this.singleCqlPart(columnName,operator,values[0],andor,time);
         }

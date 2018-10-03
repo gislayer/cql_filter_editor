@@ -57,7 +57,12 @@ You may have information about libraries using  **links!**
 	About : Getting Column's data type.
 	
  - Method Name : **addCQLPart**
-	Parameter :   ColumnName:string, operator:string, values:array, andor:string
+	Parameter :  id or time (integer)
+	Return : this 
+	About : for delete exist cql query.
+
+ - Method Name : **deleteCQLPart**
+	Parameter :   ColumnName:string, operator:string, values:array, andor:string, id or time (integer)
 	Return : this 
 	About : for add a new query.
 	
